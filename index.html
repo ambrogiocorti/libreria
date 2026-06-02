@@ -1,1 +1,1125 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Mia Biblioteca Digitale</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="icon" href="https://img.icons8.com/pieces/64/library.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- STILE DARK MODE MINIMALE --- */
+        :root {
+            --bg-color: #030712; /* Zinc 950 */
+            --surface-color: rgba(24, 24, 27, 0.6);
+            --surface-overlay: rgba(39, 39, 42, 0.8);
+            --accent-color: #3b82f6; /* Blu Reale */
+            --accent-color-alt: #8b5cf6; /* Ametista */
+            --accent-gradient: linear-gradient(135deg, var(--accent-color), var(--accent-color-alt));
+            --text-color: #f8fafc;
+            --text-muted: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --glass-bg: rgba(9, 9, 11, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --font-main: 'Inter', sans-serif;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        ::selection {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 5px; border: 2px solid var(--bg-color); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+        body {
+            background: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 30%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 30%),
+                radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.1), transparent 30%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        header {
+            position: sticky;
+            top: 1.5rem;
+            z-index: 50;
+            width: calc(100% - 3rem);
+            max-width: 1200px;
+            margin: 0 auto 2rem auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 24px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .header-content {
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header-left {
+            flex-shrink: 0;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 0.3rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        h1 span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .input-field {
+            background-color: rgba(9, 9, 11, 0.5);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.7rem 1.2rem;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea.input-field {
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            background-color: rgba(24, 24, 27, 0.8);
+        }
+
+        .flex-grow {
+            flex-grow: 1;
+            min-width: 200px;
+        }
+
+        .btn {
+            background: var(--accent-gradient);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            letter-spacing: 0.5px;
+            padding: 0.6rem 1.5rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            border-color: var(--accent-color);
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        #isbn-loading {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        .msg-success { color: var(--success-color); }
+        .msg-error { color: var(--error-color); }
+        .msg-info { color: var(--accent-color); }
+
+        /* --- FORM MANUALE NASCOSTO --- */
+        .manual-form {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- BARRA DI RICERCA E FILTRI --- */
+        .search-bar {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            outline: none;
+            min-width: 180px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-bar:focus {
+            border-color: #555;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
+        }
+
+    .select-filter {
+        min-width: auto;
+        padding: 0.5rem 2rem 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        outline: none;
+        cursor: pointer;
+        border-radius: 6px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.6rem center;
+        transition: all 0.2s ease;
+    }
+
+    .select-filter:focus {
+        border-color: #555;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .select-filter option {
+        background-color: #18181b;
+        color: #fff;
+    }
+
+    .status-filters {
+        display: flex;
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.2rem;
+        gap: 0.2rem;
+    }
+
+    .filter-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.3rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+        color: var(--text-color);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .filter-btn.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); }
+            70% { box-shadow: 0 0 0 15px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+
+        /* --- FAB --- */
+        .fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 300;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+            z-index: 90;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: pulse 2.5s infinite;
+        }
+
+        .fab:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+            animation: none;
+        }
+        
+        @media (max-width: 900px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .controls-wrapper {
+                justify-content: flex-start;
+            }
+        }
+
+        /* --- GRIGLIA LIBRI --- */
+        .grid-container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 2rem;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .book-card {
+            background: var(--surface-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            opacity: 0;
+            animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .book-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-20deg);
+            transition: all 0.7s ease;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4), 0 0 20px rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .book-card:hover::after {
+            left: 200%;
+        }
+
+        .cover-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 150%; 
+            background-color: #2a2a2a;
+            overflow: hidden;
+        }
+
+        .cover-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .book-card:hover .cover-img {
+            transform: scale(1.05);
+        }
+
+        .book-info {
+            padding: 1rem;
+        }
+
+        .book-title {
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.2rem;
+        }
+
+        .book-author {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .book-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .rating {
+            color: #ffd700;
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-letto { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-lettura { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .status-da-leggere { background: rgba(161, 161, 170, 0.15); color: #d4d4d8; border: 1px solid rgba(161, 161, 170, 0.3); }
+
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .book-card:hover .delete-btn {
+            display: flex;
+        }
+
+        /* --- COMFORT MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 1rem;
+        }
+
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-content {
+            background: rgba(24, 24, 27, 0.95);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: var(--text-color);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        @keyframes coverPop {
+            0% { transform: scale(0.9) translateY(10px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-cover {
+            width: 150px;
+            height: 225px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            animation: coverPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .modal-details {
+            flex-grow: 1;
+            flex-basis: 300px;
+        }
+
+        .modal-trama {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 1rem 0;
+            line-height: 1.5;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .modal-edit-section {
+            background-color: var(--surface-overlay);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .modal-edit-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <h1>My<span>Library</span></h1>
+            </div>
+            
+            <div class="header-right controls-wrapper">
+                <input type="text" id="search" class="search-bar" placeholder="Cerca autore, genere, scaffale...">
+                <select id="shelf-filter" class="select-filter" onchange="applyFilters()">
+                    <option value="ALL">Tutti gli Scaffali</option>
+                </select>
+                <select id="sort-filter" class="select-filter" onchange="applyFilters()">
+                    <option value="DEFAULT">Ordina: Recenti</option>
+                    <option value="AZ">Titolo (A-Z)</option>
+                    <option value="ZA">Titolo (Z-A)</option>
+                </select>
+                <div class="status-filters">
+                    <button class="filter-btn active" onclick="filterStatus('ALL', this)" title="Tutti i Libri">Tutti i Libri</button>
+                    <button class="filter-btn" onclick="filterStatus('IN_LETTURA', this)" title="In Lettura">In Lettura</button>
+                    <button class="filter-btn" onclick="filterStatus('DA_LEGGERE', this)" title="Da Leggere">Da Leggere</button>
+                    <button class="filter-btn" onclick="filterStatus('LETTO', this)" title="Letti">Letti</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="grid-container" id="library-grid">
+        </main>
+
+    <!-- Modale Aggiunta Libro -->
+    <div class="modal-overlay" id="add-book-modal" onclick="closeAddModal()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="padding-bottom: 2rem;">
+            <div class="modal-header">
+                <h2>Aggiungi un nuovo libro</h2>
+                <button class="modal-close" onclick="closeAddModal()">&times;</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="input-row">
+                    <input type="text" id="isbn-input" class="input-field flex-grow" placeholder="Incolla codice ISBN (es. 9788845292613)">
+                    <button class="btn btn-secondary" onclick="startScanner()" id="scan-btn" title="Scansiona codice a barre dal telefono">📷</button>
+                    <button class="btn" onclick="fetchBookWithFallback()">Cerca e Aggiungi</button>
+                    <button class="btn btn-secondary" onclick="toggleManualForm()">Inserisci a Mano</button>
+                    <span id="isbn-loading"></span>
+                </div>
+                
+                <div id="reader-container" style="display: none; margin-top: 1rem; text-align: center;">
+                    <div id="reader" style="width: 100%; max-width: 500px; margin: 0 auto; background-color: var(--surface-overlay); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+                    <button class="btn btn-secondary" onclick="stopScanner()" style="margin-top: 1rem;">Chiudi Scanner</button>
+                </div>
+
+                <div class="manual-form" id="manual-form">
+                    <div class="form-group">
+                        <label>Titolo *</label>
+                        <input type="text" id="manual-title" class="input-field" placeholder="Es. Lo Hobbit">
+                    </div>
+                    <div class="form-group">
+                        <label>Autore</label>
+                        <input type="text" id="manual-author" class="input-field" placeholder="Es. J.R.R. Tolkien">
+                    </div>
+                    <div class="form-group">
+                        <label>Pagine</label>
+                        <input type="number" id="manual-pages" class="input-field" placeholder="Es. 350">
+                    </div>
+                    <div class="form-group">
+                        <label>Link Immagine Copertina</label>
+                        <input type="text" id="manual-cover" class="input-field" placeholder="URL immagine">
+                    </div>
+                    <div class="form-group">
+                        <label>Genere</label>
+                        <input type="text" id="manual-genre" class="input-field" placeholder="Es. Fantasy, Giallo...">
+                    </div>
+                    <div class="form-group">
+                        <label>Editore</label>
+                        <input type="text" id="manual-publisher" class="input-field" placeholder="Es. Mondadori">
+                    </div>
+                    <div class="form-group">
+                        <label>Anno Pubblicazione</label>
+                        <input type="text" id="manual-year" class="input-field" placeholder="Es. 1954">
+                    </div>
+                    <div class="form-group">
+                        <label>Scaffale / Categoria</label>
+                        <input type="text" id="manual-scaffale" class="input-field" placeholder="Es. Classici, Programmazione...">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
+                        <button class="btn" onclick="addBookManually()">Salva Libro</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="book-modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modal-title">Titolo Libro</h2>
+                    <p id="modal-author" style="color: var(--text-muted); margin-top: 0.2rem;">Autore</p>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modal-img" class="modal-cover" src="" alt="Copertina">
+                <div class="modal-details">
+                    <p style="font-size: 0.85rem; color: var(--accent-color);" id="modal-pages">Pagine: --</p>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin: 0.5rem 0;">
+                        <span id="modal-genre-text">Genere: -</span> | 
+                        <span id="modal-publisher-text">Editore: -</span> | 
+                        <span id="modal-year-text">Anno: -</span>
+                    </div>
+                    <div class="modal-trama" id="modal-trama">Trama non disponibile.</div>
+                    
+                    <div class="modal-edit-section">
+                        <div class="form-group">
+                            <label>Stato di lettura</label>
+                            <select id="edit-status" class="input-field" style="width:100%;">
+                                <option value="DA_LEGGERE">Da Leggere</option>
+                                <option value="IN_LETTURA">In Lettura</option>
+                                <option value="LETTO">Letto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Il tuo Voto</label>
+                            <select id="edit-rating" class="input-field" style="width:100%;">
+                                <option value="—">Nessun voto</option>
+                                <option value="⭐">⭐</option>
+                                <option value="⭐⭐">⭐⭐</option>
+                                <option value="⭐⭐⭐">⭐⭐⭐</option>
+                                <option value="⭐⭐⭐⭐">⭐⭐⭐⭐</option>
+                                <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Scaffale / Categoria</label>
+                            <input type="text" id="edit-scaffale" class="input-field" placeholder="Es. Programmazione, Classici...">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Note Personali & Citazioni</label>
+                            <textarea id="edit-note" class="input-field" rows="3" placeholder="I tuoi pensieri su questo libro, oppure le tue frasi preferite..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+                <button class="btn" onclick="saveBookEdits()">Salva Modifiche</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="fab" onclick="openAddModal()" title="Aggiungi Libro">+</button>
+
+    <script>
+        let libri = JSON.parse(localStorage.getItem('mia_biblioteca')) || [
+            {
+                id: 1,
+                titolo: "Il Signore degli Anelli",
+                autore: "J.R.R. Tolkien",
+                stato: "LETTO",
+                voto: "⭐⭐⭐⭐⭐",
+                trama: "Il capitolo fondamentale dell'epic fantasy letterario universale.",
+                pagine: 1200,
+                copertina: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1654215225i/61215351.jpg",
+                genere: "Fantasy",
+                editore: "Bompiani",
+                anno: "1954",
+                isbn: "9788845292613",
+                scaffale: "I Grandi Classici",
+                dataInizio: "2023-01-10",
+                dataFine: "2023-02-20",
+                note: "Un capolavoro assoluto.\nCit: 'Non tutti quelli che vagano sono persi.'"
+            }
+        ];
+
+        const grid = document.getElementById('library-grid');
+        const searchInput = document.getElementById('search');
+        let currentFilter = 'ALL';
+        let activeBookId = null;
+
+        function salvaNelPC() {
+            localStorage.setItem('mia_biblioteca', JSON.stringify(libri));
+        }
+
+        function showStatus(text, type) {
+            const label = document.getElementById('isbn-loading');
+            label.innerText = text;
+            label.className = ''; 
+            if (type === 'success') label.classList.add('msg-success');
+            if (type === 'error') label.classList.add('msg-error');
+            if (type === 'info') label.classList.add('msg-info');
+        }
+
+        function renderBooks(booksToRender) {
+            grid.innerHTML = '';
+            booksToRender.forEach((libro, index) => {
+                let badgeClass = 'status-da-leggere';
+                let labelStato = 'Da Leggere';
+                if(libro.stato === 'LETTO') { badgeClass = 'status-letto'; labelStato = 'Letto'; }
+                if(libro.stato === 'IN_LETTURA') { badgeClass = 'status-lettura'; labelStato = 'In Lettura'; }
+
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.setAttribute('onclick', `openModal(${libro.id})`);
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.innerHTML = `
+                    <button class="delete-btn" onclick="eliminaLibro(${libro.id}, event)">×</button>
+                    <div class="cover-wrapper">
+                        <img class="cover-img" src="${libro.copertina}" alt="${libro.titolo}" onerror="this.src='https://via.placeholder.com/180x270/27272a/a1a1aa?text=Nessuna+Copertina'">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title" title="${libro.titolo}">${libro.titolo}</div>
+                        <div class="book-author">${libro.autore}</div>
+                        <div class="book-meta">
+                            <span class="rating">${libro.voto}</span>
+                            <span class="status-badge ${badgeClass}">${labelStato}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function isDuplicate(titolo, autore, isbn) {
+            return libri.some(l => {
+                if (isbn && l.isbn && l.isbn === isbn) return true;
+                if (l.titolo.toLowerCase() === titolo.toLowerCase() && l.autore.toLowerCase() === autore.toLowerCase()) return true;
+                return false;
+            });
+        }
+        
+        function populateShelfFilter() {
+            const shelfSelect = document.getElementById('shelf-filter');
+            const currentSelection = shelfSelect.value;
+            
+            // Trova tutti gli scaffali unici ed escludi quelli vuoti
+            const shelves = [...new Set(libri.map(l => l.scaffale).filter(s => s && s.trim() !== ''))].sort();
+            
+            shelfSelect.innerHTML = '<option value="ALL">Tutti gli Scaffali</option>';
+            shelves.forEach(shelf => {
+                const opt = document.createElement('option');
+                opt.value = shelf;
+                opt.textContent = shelf;
+                shelfSelect.appendChild(opt);
+            });
+            
+            if (shelves.includes(currentSelection)) {
+                shelfSelect.value = currentSelection;
+            } else {
+                shelfSelect.value = 'ALL';
+            }
+        }
+
+        // --- SISTEMA DI CAMPO DI BATTAGLIA API (CON RISERVA AUTOMATICA) ---
+        async function fetchBookWithFallback() {
+            const isbnInput = document.getElementById('isbn-input');
+            const isbn = isbnInput.value.trim().replace(/-/g, '');
+
+            if (!isbn) {
+                showStatus("Codice vuoto!", "error");
+                return;
+            }
+
+            // --- TENTATIVO 1: GOOGLE BOOKS CON URL COMPATIBILE ---
+            showStatus("Tentativo 1: Connessione a Google...", "info");
+            try {
+                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.totalItems > 0 && data.items) {
+                        const info = data.items[0].volumeInfo;
+                        insertBookIntoLibrary({
+                            titolo: info.title,
+                            autore: info.authors ? info.authors.join(', ') : "Autore Sconosciuto",
+                            trama: info.description || "Trama non disponibile.",
+                            pagine: info.pageCount || "N/D",
+                            copertina: info.imageLinks?.thumbnail ? info.imageLinks.thumbnail.replace('http://', 'https://') : '',
+                            genere: info.categories ? info.categories.join(', ') : '',
+                            editore: info.publisher || '',
+                            anno: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
+                            isbn: (info.industryIdentifiers?.find(id => id.type === 'ISBN_13') || info.industryIdentifiers?.find(id => id.type === 'ISBN_10'))?.identifier || isbn
+                        });
+                        isbnInput.value = '';
+                        return; // Successo! Usciamo dalla funzione
+                    }
+                }
+            } catch (e) {
+                console.log("Google Books bloccato o non raggiungibile, provo OpenLibrary...");
+            }
+
+            // --- TENTATIVO 2: FALLBACK AUTOMATICO SU OPEN LIBRARY ---
+            showStatus("Tentativo 2: Connessione a OpenLibrary...", "info");
+            try {
+                const resOL = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+                if (resOL.ok) {
+                    const dataOL = await resOL.json();
+                    const bookKey = `ISBN:${isbn}`;
+                    
+                    if (dataOL && dataOL[bookKey]) {
+                        const infoOL = dataOL[bookKey];
+                        insertBookIntoLibrary({
+                            titolo: infoOL.title,
+                            autore: infoOL.authors ? infoOL.authors.map(a => a.name).join(', ') : "Autore Sconosciuto",
+                            trama: "Scaricato via OpenLibrary.",
+                            pagine: infoOL.number_of_pages || "N/D",
+                            copertina: infoOL.cover?.large || infoOL.cover?.medium || '',
+                            genere: infoOL.subjects ? infoOL.subjects.map(s => s.name).slice(0, 3).join(', ') : '',
+                            editore: infoOL.publishers ? infoOL.publishers.map(p => p.name).join(', ') : '',
+                            anno: infoOL.publish_date || '',
+                            isbn: isbn
+                        });
+                        isbnInput.value = '';
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error("Anche OpenLibrary ha fallito:", e);
+            }
+
+            // Se entrambi i tentativi falliscono
+            showStatus("Nessuna risposta dalle API. Usa l'inserimento manuale.", "error");
+        }
+
+        function insertBookIntoLibrary(bookData) {
+            if (isDuplicate(bookData.titolo, bookData.autore, bookData.isbn)) {
+                showStatus("Libro già presente nella tua libreria!", "error");
+                return;
+            }
+
+            const nuovoLibro = {
+                id: Date.now(),
+                titolo: bookData.titolo,
+                autore: bookData.autore,
+                stato: "DA_LEGGERE",
+                voto: "—",
+                trama: bookData.trama || "Trama non disponibile.",
+                pagine: bookData.pagine || "N/D",
+                copertina: bookData.copertina || 'https://via.placeholder.com/180x270/27272a/a1a1aa?text=' + encodeURIComponent(bookData.titolo),
+                genere: bookData.genere || "Sconosciuto",
+                editore: bookData.editore || "Sconosciuto",
+                anno: bookData.anno || "N/D",
+                isbn: bookData.isbn || "",
+                scaffale: bookData.scaffale || ""
+            };
+            libri.unshift(nuovoLibro);
+            salvaNelPC();
+            populateShelfFilter();
+            applyFilters();
+            showStatus("Libro inserito con successo!", "success");
+            setTimeout(() => {
+                showStatus('', '');
+                closeAddModal();
+            }, 1000);
+        }
+
+        // --- MANUALE ---
+        function toggleManualForm() {
+            const form = document.getElementById('manual-form');
+            form.style.display = (form.style.display === 'grid') ? 'none' : 'grid';
+        }
+
+        function addBookManually() {
+            const title = document.getElementById('manual-title').value.trim();
+            const author = document.getElementById('manual-author').value.trim();
+            const pages = document.getElementById('manual-pages').value.trim();
+            const cover = document.getElementById('manual-cover').value.trim();
+            const genere = document.getElementById('manual-genre').value.trim();
+            const editore = document.getElementById('manual-publisher').value.trim();
+            const anno = document.getElementById('manual-year').value.trim();
+            const scaffale = document.getElementById('manual-scaffale').value.trim();
+
+            if (!title) { alert("Il titolo è obbligatorio!"); return; }
+
+            insertBookIntoLibrary({
+                titolo: title,
+                autore: author,
+                trama: "Inserito manualmente.",
+                pagine: pages,
+                copertina: cover,
+                genere: genere,
+                editore: editore,
+                anno: anno,
+                isbn: "",
+                scaffale: scaffale
+            });
+            
+            document.querySelectorAll('.manual-form .input-field').forEach(i => i.value = '');
+            toggleManualForm();
+            closeAddModal();
+        }
+
+        // --- MODAL ---
+        function openAddModal() {
+            document.getElementById('add-book-modal').style.display = 'flex';
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-book-modal').style.display = 'none';
+            stopScanner();
+            document.getElementById('isbn-input').value = '';
+            showStatus('', '');
+        }
+
+        function openModal(id) {
+            const libro = libri.find(l => l.id === id);
+            if (!libro) return;
+            activeBookId = id;
+            document.getElementById('modal-title').innerText = libro.titolo;
+            document.getElementById('modal-author').innerText = libro.autore;
+            document.getElementById('modal-img').src = libro.copertina;
+            document.getElementById('modal-pages').innerText = `Pagine: ${libro.pagine || 'N/D'}`;
+            
+            document.getElementById('modal-genre-text').innerText = `Genere: ${libro.genere || '-'}`;
+            document.getElementById('modal-publisher-text').innerText = `Editore: ${libro.editore || '-'}`;
+            document.getElementById('modal-year-text').innerText = `Anno: ${libro.anno || '-'}`;
+            
+            document.getElementById('modal-trama').innerText = libro.trama || "Trama non disponibile.";
+            
+            document.getElementById('edit-status').value = libro.stato || 'DA_LEGGERE';
+            document.getElementById('edit-rating').value = libro.voto || '—';
+            document.getElementById('edit-scaffale').value = libro.scaffale || '';
+            document.getElementById('edit-note').value = libro.note || '';
+            
+            document.getElementById('book-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('book-modal').style.display = 'none';
+            activeBookId = null;
+        }
+
+        function saveBookEdits() {
+            if (!activeBookId) return;
+            const idx = libri.findIndex(l => l.id === activeBookId);
+            if (idx !== -1) {
+                libri[idx].stato = document.getElementById('edit-status').value;
+                libri[idx].voto = document.getElementById('edit-rating').value;
+                libri[idx].scaffale = document.getElementById('edit-scaffale').value;
+                libri[idx].dataInizio = document.getElementById('edit-start-date').value;
+                libri[idx].dataFine = document.getElementById('edit-end-date').value;
+                libri[idx].note = document.getElementById('edit-note').value;
+                salvaNelPC();
+                populateShelfFilter();
+                applyFilters();
+                closeModal();
+            }
+        }
+
+        function eliminaLibro(id, event) {
+            event.stopPropagation(); 
+            if(confirm("Vuoi davvero eliminare questo libro?")) {
+                libri = libri.filter(libro => libro.id !== id);
+                salvaNelPC();
+                populateShelfFilter();
+                applyFilters();
+            }
+        }
+
+        function filterStatus(status, button) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedShelf = document.getElementById('shelf-filter').value;
+            const sortType = document.getElementById('sort-filter').value;
+
+            let filtered = libri.filter(libro => {
+                const matchesSearch = 
+                    libro.titolo.toLowerCase().includes(searchTerm) || 
+                    libro.autore.toLowerCase().includes(searchTerm) ||
+                    (libro.scaffale && libro.scaffale.toLowerCase().includes(searchTerm)) ||
+                    (libro.genere && libro.genere.toLowerCase().includes(searchTerm));
+                const matchesStatus = currentFilter === 'ALL' || libro.stato === currentFilter;
+                const matchesShelf = selectedShelf === 'ALL' || (libro.scaffale === selectedShelf);
+
+                return matchesSearch && matchesStatus && matchesShelf;
+            });
+
+            if (sortType === 'AZ') {
+                filtered.sort((a, b) => a.titolo.localeCompare(b.titolo));
+            } else if (sortType === 'ZA') {
+                filtered.sort((a, b) => b.titolo.localeCompare(a.titolo));
+            } else {
+                filtered.sort((a, b) => b.id - a.id);
+            }
+
+            renderBooks(filtered);
+        }
+
+        searchInput.addEventListener('input', applyFilters);
+        populateShelfFilter();
+        renderBooks(libri);
+
+        // --- SCANNER CODICI A BARRE ---
+        let html5QrCode;
+
+        function startScanner() {
+            const readerContainer = document.getElementById('reader-container');
+            readerContainer.style.display = 'block';
+
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            // Imposta la dimensione dell'area di scansione per focalizzarsi sui codici a barre 
+            const config = { fps: 10, qrbox: { width: 250, height: 100 } };
+            
+            // Prova a usare la fotocamera posteriore (ideale per smartphone)
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+            .catch((err) => {
+                showStatus("Errore nell'avvio della fotocamera. Verifica di aver concesso i permessi al browser.", "error");
+                console.error(err);
+                readerContainer.style.display = 'none';
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader-container').style.display = 'none';
+                }).catch((err) => console.error("Failed to stop scanner", err));
+            } else {
+                document.getElementById('reader-container').style.display = 'none';
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            stopScanner();
+            // Pulisce il testo decodificato
+            const cleanIsbn = decodedText.trim().replace(/-/g, '');
+            document.getElementById('isbn-input').value = cleanIsbn;
+            
+            // Avvia la ricerca e l'aggiunta in automatico
+            fetchBookWithFallback();
+        }
+    </script>
+</body>
+</html>
