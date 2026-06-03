@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyLibrary</title>
+    <title>La Mia Biblioteca Digitale</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="icon" href="https://img.icons8.com/pieces/64/library.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -750,8 +751,6 @@
                 anno: "1954",
                 isbn: "9788845292613",
                 scaffale: "I Grandi Classici",
-                dataInizio: "2023-01-10",
-                dataFine: "2023-02-20",
                 note: "Un capolavoro assoluto.\nCit: 'Non tutti quelli che vagano sono persi.'"
             }
         ];
@@ -761,8 +760,16 @@
         let currentFilter = 'ALL';
         let activeBookId = null;
 
-        function salvaNelPC() {
-            localStorage.setItem('mia_biblioteca', JSON.stringify(libri));
+        // --- CONFIGURAZIONE CLOUD (SUPABASE) ---
+        const supabaseUrl = 'https://rekgcovhqywpwiodkndb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJla2djb3ZocXl3cHdpb2RrbmRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQ5MzgsImV4cCI6MjA5NjAyMDkzOH0.1hE5BDrRW0qo487s1ECmEZs92YFuIAGSCsjQeC7dsIo';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function salvaNelCloud() {
+            const { error } = await supabase
+                .from('cloud_storage')
+                .upsert({ id: 1, libreria: libri });
+            if (error) console.error("Errore salvataggio:", error);
         }
 
         function showStatus(text, type) {
@@ -926,7 +933,7 @@
                 scaffale: bookData.scaffale || ""
             };
             libri.unshift(nuovoLibro);
-            salvaNelPC();
+            salvaNelCloud();
             populateShelfFilter();
             applyFilters();
             showStatus("Libro inserito con successo!", "success");
@@ -1019,10 +1026,8 @@
                 libri[idx].stato = document.getElementById('edit-status').value;
                 libri[idx].voto = document.getElementById('edit-rating').value;
                 libri[idx].scaffale = document.getElementById('edit-scaffale').value;
-                libri[idx].dataInizio = document.getElementById('edit-start-date').value;
-                libri[idx].dataFine = document.getElementById('edit-end-date').value;
                 libri[idx].note = document.getElementById('edit-note').value;
-                salvaNelPC();
+                salvaNelCloud();
                 populateShelfFilter();
                 applyFilters();
                 closeModal();
@@ -1033,7 +1038,7 @@
             event.stopPropagation(); 
             if(confirm("Vuoi davvero eliminare questo libro?")) {
                 libri = libri.filter(libro => libro.id !== id);
-                salvaNelPC();
+                salvaNelCloud();
                 populateShelfFilter();
                 applyFilters();
             }
@@ -1074,9 +1079,29 @@
             renderBooks(filtered);
         }
 
-        searchInput.addEventListener('input', applyFilters);
-        populateShelfFilter();
-        renderBooks(libri);
+        async function avviaApp() {
+            showStatus("Connessione al Cloud...", "info");
+            const { data, error } = await supabase.from('cloud_storage').select('libreria').eq('id', 1).single();
+            
+            if (data && data.libreria) {
+                libri = data.libreria;
+            }
+            
+            searchInput.addEventListener('input', applyFilters);
+            populateShelfFilter();
+            renderBooks(libri);
+            showStatus("", "");
+
+            // Abilita la sincronizzazione LIVE in tempo reale tra PC e Telefono!
+            supabase.channel('live-sync')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'cloud_storage' }, payload => {
+                    libri = payload.new.libreria;
+                    populateShelfFilter();
+                    applyFilters();
+                }).subscribe();
+        }
+
+        avviaApp();
 
         // --- SCANNER CODICI A BARRE ---
         let html5QrCode;
